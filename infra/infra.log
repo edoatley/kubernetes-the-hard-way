@@ -1,0 +1,22 @@
+OUTPUTS:
+
+JUMPBOX VM:
+
+vmip=172.201.9.5
+ssh azureuser@172.201.9.5
+
+JUMPBOX SCP for SSH KEYS:
+
+scp -r /Users/n18576/source/edoatley/kubernetes-the-hard-way/infra/.ssh/ azureuser@172.201.9.5:~/
+NODE server:
+
+vmPrivateIp=10.99.1.4
+ssh -i ~/.ssh/k8s azureuser@10.99.1.4
+NODE node-0:
+
+vmPrivateIp=10.99.1.5
+ssh -i ~/.ssh/k8s azureuser@10.99.1.5
+NODE node-1:
+
+vmPrivateIp=10.99.1.6
+ssh -i ~/.ssh/k8s azureuser@10.99.1.6
