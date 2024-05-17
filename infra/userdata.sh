@@ -15,3 +15,12 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/microso
 apt-get update -y && \
   apt-get install -y azure-cli wget curl vim openssl git 
 
+git clone --depth 1 https://github.com/kelseyhightower/kubernetes-the-hard-way.git /root/kubernetes-the-hard-way
+
+cd /root/kubernetes-the-hard-way
+mkdir downloads
+wget -q --show-progress \
+  --https-only \
+  --timestamping \
+  -P downloads \
+  -i downloads.txt

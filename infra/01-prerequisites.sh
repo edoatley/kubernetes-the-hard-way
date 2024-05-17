@@ -24,8 +24,12 @@ sshPublicKey="$HOME/.ssh/id_rsa.pub"
 node_ssh_locn="$(pwd)/.ssh/k8s.pub" 
 ssh_locn="$(pwd)/.ssh/k8s"
 node_ssh_folder="$(pwd)/.ssh/" 
-jumpSku="Standard_B16ms" # "Standard_B8ms"
-nodeSku="Standard_D4pds_v5" # Arm compatible
+vmSku="Standard_D4pds_v5" # Arm compatible
+
+###########################################################################################
+# Here we get the most current non-daily build of Debian 12 for ARM64
+###########################################################################################
+image=$(az vm image list --offer "debian-12" --publisher Debian --sku 12-arm64 --architecture Arm64 --all --output tsv --query "[?contains(offer, 'daily') == \`false\`]|[sort_by(@, &version)][].{urn:urn, version:version} | reverse(@)[0]" | cut -f1)
 
 ###########################################################################################
 # Functions
@@ -71,11 +75,11 @@ done
 az vm create \
   --resource-group $rgName \
   --name $vmName \
-  --image Ubuntu2204 \
+  --image "${image}" \
   --admin-username $vmUserName \
   --ssh-key-values "${sshPublicKey}" \
   --location $location \
-  --size $jumpSku \
+  --size $vmSku \
   --public-ip-address-allocation static \
   --vnet-name $vnetName \
   --subnet $jumpboxSnetName \
@@ -110,18 +114,16 @@ az network nsg rule create \
 # Create an ssh key pair for the nodes
 ssh-keygen -t rsa -b 4096 -f "${ssh_locn}" -N ""
 
-# Here we get the most current non-daily build of Debian 12 for ARM64
-image=$(az vm image list --offer "debian-12" --publisher Debian --sku 12-arm64 --architecture Arm64 --all --output tsv --query "[?contains(offer, 'daily') == \`false\`]|[sort_by(@, &version)][].{urn:urn, version:version} | reverse(@)[0]" | cut -f1)
 # Create the nodes
 for v in server node-0 node-1; do
     az vm create \
         --resource-group $rgName \
         --name $v \
-        --image "$image" \
+        --image "${image}" \
         --admin-username $vmUserName \
         --ssh-key-values "${node_ssh_locn}" \
         --location $location \
-        --size $nodeSku \
+        --size $vmSku \
         --vnet-name $vnetName \
         --subnet $nodeSnetName \
         --public-ip-address "" \
